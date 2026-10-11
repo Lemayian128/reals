@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MMUST - Login + Exam Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#f5f7fb}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0a3d2e,#1a6b4f);padding:20px}
+.login-card{background:#fff;border-radius:16px;padding:28px;width:100%;max-width:420px;box-shadow:0 20px 40px rgba(0,0,0,.2)}
+.header{height:64px;background:#0a3d2e;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:10}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 64px)}
+.side{background:#fff;border-right:1px solid #e5e7eb;padding:16px}
+.nav-item{padding:12px 14px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:14px;margin:4px 0;color:#555}
+.nav-item.active{background:#0a3d2e;color:#fff;font-weight:600}.nav-item.disabled{opacity:.4;pointer-events:none}
+.main{padding:24px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px}
+.badge{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:700;display:inline-block}
+.badge-green{background:#dcfce7;color:#166534}.badge-red{background:#fee2e2;color:#991b1b}.badge-yellow{background:#fef9c3;color:#854d0e}
+.input{width:100%;height:44px;border:1px solid #d1d5db;border-radius:8px;padding:0 12px;margin:6px 0;font-size:14px}
+.btn{height:44px;border:none;border-radius:8px;font-weight:700;cursor:pointer;padding:0 18px;font-size:14px;width:100%}
+.btn-green{background:#0a3d2e;color:#fff}.btn-ghost{background:#f3f4f6;color:#111}.btn-mpesa{background:#1baa4a;color:#fff}
+.table{width:100%;border-collapse:collapse;font-size:14px}.table th{text-align:left;padding:10px;background:#f9fafb;border-bottom:1px solid #e5e7eb}.table td{padding:10px;border-bottom:1px solid #f3f4f6}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}.modal.show{display:flex}
+.mcard{background:#fff;border-radius:12px;padding:0;width:100%;max-width:400px;overflow:hidden}
+.m-header{background:#1baa4a;color:#fff;padding:16px;display:flex;align-items:center;gap:12px}
+.m-body{padding:16px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#111;color:#fff;padding:12px 18px;border-radius:8px;opacity:0;transition:.3s;z-index:200}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.side{display:none}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage" class="login-wrap">
+<div class="login-card">
+<div style="text-align:center;margin-bottom:20px"><div style="width:56px;height:56px;background:#0a3d2e;color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:24px;margin:0 auto">M</div><h2 style="margin-top:12px">MMUST Portal</h2><p style="font-size:13px;color:#666;margin-top:4px">Supplementary & Special Exams</p></div>
+<div id="loginForm">
+<input id="loginReg" class="input" placeholder="Reg No e.g BIT/001/2022" value="BIT/001/2022">
+<input id="loginPass" type="password" class="input" placeholder="Password" value="123456">
+<button id="loginBtn" class="btn btn-green" style="margin-top:8px">Login as Student</button>
+<button id="showRegBtn" class="btn btn-ghost" style="margin-top:8px">Create Account (Demo)</button>
+<div style="font-size:11px;color:#666;margin-top:12px;background:#f9fafb;padding:10px;border-radius:8px">Demo Accounts:<br><b>BIT/001/2022</b> / 123456 - Fees CLEARED<br><b>BIT/002/2022</b> / 123456 - Fees NOT CLEARED (KES 5,000)<br>Or create new account - fees status auto-checked</div>
+</div>
+<div id="regForm" style="display:none">
+<input id="regName" class="input" placeholder="Full Name">
+<input id="regRegNo" class="input" placeholder="Reg No e.g BIT/003/2022">
+<input id="regEmail" class="input" placeholder="Email e.g student@mmust.ac.ke">
+<input id="regPass" type="password" class="input" placeholder="Password">
+<button id="regBtn" class="btn btn-green" style="margin-top:8px">Register Student (Demo)</button>
+<button id="showLoginBtn" class="btn btn-ghost" style="margin-top:8px">Back to Login</button>
+</div>
+</div>
+</div>
+
+<!-- MAIN APP -->
+<div id="appPage" style="display:none">
+<div class="header">
+<div style="font-weight:700">MMUST <span style="font-size:11px;background:#fff;color:#0a3d2e;padding:2px 8px;border-radius:20px;margin-left:8px">EXAM PORTAL</span> <span style="font-size:12px;font-weight:400;margin-left:12px" id="loggedUser">BIT/001/2022</span></div>
+<div style="display:flex;gap:8px"><span id="feesBadgeTop" class="badge badge-green">FEES CLEARED</span><button id="logoutBtn" style="height:32px;padding:0 12px;background:#ffffff22;border:1px solid #ffffff33;color:#fff;border-radius:6px">Logout</button></div>
+</div>
+<div class="layout">
+<div class="side">
+<div id="navDashboard" class="nav-item active">📊 Dashboard</div>
+<div id="navFees" class="nav-item">💰 Fees Status</div>
+<div id="navApply" class="nav-item">📝 Apply Exam</div>
+<div id="navMyApps" class="nav-item">📄 My Applications</div>
+<div id="navAdmin" class="nav-item">🛡️ Admin</div>
+<div style="margin-top:20px;padding:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:12px"><b>Flow:</b> Login → Fees must be CLEARED → Apply → Approved → Pay KES 500 M-Pesa → PDF</div>
+</div>
+<div class="main">
+<div id="pageDashboard">
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+<div class="card"><div style="font-size:12px;color:#666">Fees</div><div id="kpiFees" style="font-size:20px;font-weight:700">KES 0</div><div id="kpiFeesBadge" class="badge badge-green" style="margin-top:6px">CLEARED</div></div>
+<div class="card"><div style="font-size:12px;color:#666">My Applications</div><div id="kpiSupp" style="font-size:20px;font-weight:700">0</div></div>
+<div class="card"><div style="font-size:12px;color:#666">M-Pesa Paid</div><div id="kpiPaid" style="font-size:20px;font-weight:700">KES 0</div></div>
+<div class="card"><div style="font-size:12px;color:#666">Status</div><div id="kpiElig" style="font-size
